@@ -1,0 +1,17 @@
+enum UrlType {
+  UPLOAD
+  DOWNLOAD
+}
+
+type Query {
+  getPresignedUrl(key: String!, bucket: String!, urlType: UrlType!): response
+}
+
+type response {
+  statusCode: Int
+  body: String
+}
+
+schema {
+  query: Query
+}
