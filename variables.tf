@@ -24,8 +24,8 @@ variable "api_name" {
 }
 
 
-variable "custom_domain_name" {
-  description = "The name of the custom-domain"
+variable "dynamodb_table_name" {
+  description = "The name of the existing DynamoDB table"
   type        = string
-  default     = "test-video-api-test-3457.com"
+  default     = "family-video"
 }

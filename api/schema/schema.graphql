@@ -12,6 +12,17 @@ type response {
   body: String
 }
 
+type FormItem {
+  formId: ID!
+  fieldName: String
+  fieldValue: String
+}
+
+type Mutation {
+  putFormItem(formId: ID!, fieldName: String, fieldValue: String): response
+}
+
 schema {
   query: Query
+  mustation : Mutation 
 }

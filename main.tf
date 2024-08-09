@@ -3,8 +3,14 @@ provider "aws" {
 }
 
 data "aws_lambda_function" "presign_lambda" {
-  function_name = var.lambda_function_name # Replace with your exact Lambda function name
+  function_name = var.lambda_function_name 
 }
+
+
+data "aws_dynamodb_table" "dynamodb_table" {
+  name = var.dynamodb_table_name
+}
+
 
 resource "aws_iam_role" "appsync_role" {
   name = "appsync-role"
@@ -60,6 +66,35 @@ resource "aws_iam_role_policy" "appsync_logging_policy" {
 }
 
 
+
+
+resource "aws_iam_policy" "appsync_dynamoDb_policy" {
+  name = "appsync-example-policy"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:Query",
+          "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem"
+        ]
+        Effect   = "Allow"
+        Resource = aws_dynamodb_table.dynamodb_table.arn
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "appsync_policy_attachment" {
+  role       = aws_iam_role.appsync_role.name
+  policy_arn = aws_iam_policy.appsync_dynamoDb_policy.arn
+}
+
+
 resource "aws_appsync_graphql_api" "api" {
   name                = var.api_name
   log_config {
@@ -87,6 +122,20 @@ resource "aws_appsync_datasource" "lambda_datasource" {
   service_role_arn = aws_iam_role.appsync_role.arn
 }
 
+
+resource "aws_appsync_datasource" "dyanmodb_datasource" {
+  api_id           = aws_appsync_graphql_api.example_api.id
+  name             = "DynamoDatasource"
+  type             = "AMAZON_DYNAMODB"
+  service_role_arn = aws_iam_role.appsync_role.arn
+
+  dynamodb_config {
+    table_name        = aws_dynamodb_table.dynamodb_table.name
+    use_caller_credentials = false
+  }
+}
+
+
 resource "aws_lambda_permission" "appsync_lambda" {
   statement_id  = "AllowAppSyncInvoke"
   action        = "lambda:InvokeFunction"
@@ -101,4 +150,14 @@ resource "aws_appsync_resolver" "get_presigned_url" {
   data_source     = aws_appsync_datasource.lambda_datasource.name
   request_template = file("${path.module}/api/resolvers/request-url.vtl")
   response_template =file("${path.module}/api/resolvers/response-url.vtl")
+}
+
+
+resource "aws_appsync_resolver" "add_form_item" {
+  api_id          = aws_appsync_graphql_api.api.id
+  type            = "Mutation"
+  field           = "putFormItem"
+  data_source     = aws_appsync_datasource.lambda_datasource.name
+  request_template = file("${path.module}/api/resolvers/request-put-form-item.vtl")
+  response_template =file("${path.module}/api/resolvers/response-put-form-item.vtl")
 }
