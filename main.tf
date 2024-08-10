@@ -83,7 +83,7 @@ resource "aws_iam_policy" "appsync_dynamoDb_policy" {
           "dynamodb:DeleteItem"
         ]
         Effect   = "Allow"
-        Resource = aws_dynamodb_table.dynamodb_table.arn
+        Resource = data.aws_dynamodb_table.dynamodb_table.arn
       }
     ]
   })
@@ -124,13 +124,13 @@ resource "aws_appsync_datasource" "lambda_datasource" {
 
 
 resource "aws_appsync_datasource" "dyanmodb_datasource" {
-  api_id           = aws_appsync_graphql_api.example_api.id
+  api_id           = aws_appsync_graphql_api.api.id
   name             = "DynamoDatasource"
   type             = "AMAZON_DYNAMODB"
   service_role_arn = aws_iam_role.appsync_role.arn
 
   dynamodb_config {
-    table_name        = aws_dynamodb_table.dynamodb_table.name
+    table_name        = data.aws_dynamodb_table.dynamodb_table.name
     use_caller_credentials = false
   }
 }
