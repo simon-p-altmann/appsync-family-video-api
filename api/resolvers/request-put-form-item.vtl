@@ -1,9 +1,12 @@
+{
   "version": "2017-02-28",
   "operation": "PutItem",
   "key": {
-    "id": $util.dynamodb.toDynamoDBJson($ctx.args.id)
+   "id": $util.dynamodb.toDynamoDBJson($ctx.arguments.formId)
   },
   "attributeValues": {
-    "name": $util.dynamodb.toDynamoDBJson($ctx.args.name)
-  }
-  
+    "fieldName":  $util.dynamodb.toDynamoDBJson($context.arguments.fieldName),
+    "fieldValue": $util.dynamodb.toDynamoDBJson($context.arguments.fieldValue)
+    }
+}
+

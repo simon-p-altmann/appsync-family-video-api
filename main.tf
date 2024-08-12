@@ -68,8 +68,8 @@ resource "aws_iam_role_policy" "appsync_logging_policy" {
 
 
 
-resource "aws_iam_policy" "appsync_dynamoDb_policy" {
-  name = "appsync-example-policy"
+resource "aws_iam_role_policy" "appsync_dynamoDb_policy" {
+   role = aws_iam_role.appsync_role.id
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -89,10 +89,7 @@ resource "aws_iam_policy" "appsync_dynamoDb_policy" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "appsync_policy_attachment" {
-  role       = aws_iam_role.appsync_role.name
-  policy_arn = aws_iam_policy.appsync_dynamoDb_policy.arn
-}
+
 
 
 resource "aws_appsync_graphql_api" "api" {
@@ -157,7 +154,7 @@ resource "aws_appsync_resolver" "add_form_item" {
   api_id          = aws_appsync_graphql_api.api.id
   type            = "Mutation"
   field           = "putFormItem"
-  data_source     = aws_appsync_datasource.lambda_datasource.name
+  data_source     = aws_appsync_datasource.dyanmodb_datasource.name
   request_template = file("${path.module}/api/resolvers/request-put-form-item.vtl")
   response_template =file("${path.module}/api/resolvers/response-put-form-item.vtl")
 }
